@@ -174,13 +174,15 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::Track& newTrack) c
 
 /// Convert MEMuons into Trajectories
 //vector<Trajectory> ME0TrackTransformer::transform(const reco::ME0Muon& oldMe0Muon) const {
-vector<Trajectory> ME0TrackTransformer::transform(const reco::ME0Muon& oldMe0Muon, const Handle<reco::GenParticleCollection>& genmuoncoll) const {
+//vector<Trajectory> ME0TrackTransformer::transform(const reco::ME0Muon& oldMe0Muon, const Handle<reco::GenParticleCollection>& genmuoncoll) const {
+vector<Trajectory> ME0TrackTransformer::transform(const reco::RealME0Muon& oldMe0Muon, const Handle<reco::GenParticleCollection>& genmuoncoll) const {
 
   const reco::Track& oldTrack = *(oldMe0Muon.innerTrack()); 
   const std::string metname = "Reco|TrackingTools|ME0TrackTransformer";
 
   reco::TransientTrack track(oldTrack,magneticField(),trackingGeometry());   
-  const EmulatedME0SegmentRef me0Segment = oldMe0Muon.me0segment(); 
+  //const EmulatedME0SegmentRef me0Segment = oldMe0Muon.me0segment(); 
+  const ME0Segment me0Segment = oldMe0Muon.me0segment(); 
 
   // Build the transient Rechits
   TransientTrackingRecHit::ConstRecHitContainer recHitsForReFit = getTransientRecHits(track);
@@ -196,7 +198,8 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::ME0Muon& oldMe0Muo
 // 						  const EmulatedME0SegmentRef me0Segm) const {
 vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& track,
 						  const TransientTrackingRecHit::ConstRecHitContainer& _recHitsForReFit,
-						  const EmulatedME0SegmentRef me0Segm,
+						  //const EmulatedME0SegmentRef me0Segm,
+						  const ME0Segment me0Segm,
 						  const Handle<reco::GenParticleCollection>& genmuons) const {
   
   ////////////////////////////////
@@ -356,7 +359,8 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
   GlobalVector momTrkOnly = ftsTrkOnly->momentum(); 
   GlobalVector posTrkOnly( ftsTrkOnly->parameters().position().x(), ftsTrkOnly->parameters().position().y(), ftsTrkOnly->parameters().position().z() ); 
   float zSign  = momTrkOnly.z()/fabs(momTrkOnly.z());
-  float zValue = 560. * zSign;
+  //Should this change away from 560?
+  float zValue = 560. * zSign;          
   Plane *plane = new Plane(Surface::PositionType(0,0,zValue),Surface::RotationType());
   // Getting the initial variables for propagation
   int chargeReco = ftsTrkOnly->charge(); 
@@ -466,7 +470,8 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
   }  
 
   // Projection matrix: 4x5
-  AlgebraicMatrix Htmp = me0Segm->projectionMatrix(); 
+  //AlgebraicMatrix Htmp = me0Segm->projectionMatrix(); 
+  AlgebraicMatrix Htmp = me0Segm.projectionMatrix(); 
   AlgebraicMatrix45 H; // I couldn't find any other way, so I resort to the brute force
   for(int i=0; i<Htmp.num_row(); ++i) {
     for(int j=0; j<Htmp.num_col(); ++j) {
@@ -487,25 +492,32 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
   }  
 
   // Measured state in "local" coordinates,  dim = 4 
-  AlgebraicVector r_meas_tmp = me0Segm->parameters(); 
+  //AlgebraicVector r_meas_tmp = me0Segm->parameters(); 
+  AlgebraicVector r_meas_tmp = me0Segm.parameters(); 
   AlgebraicVector4 r_meas; 
   // Measured state covariance matrix in "local" coordinates,  dim = 4x4 
-  AlgebraicSymMatrix V_meas_tmp = me0Segm->parametersError(); 
+  //AlgebraicSymMatrix V_meas_tmp = me0Segm->parametersError(); 
+  AlgebraicSymMatrix V_meas_tmp = me0Segm.parametersError(); 
   //AlgebraicSymMatrix44 V_meas; 
   AlgebraicSymMatrix44 V_meas; 
 
+  std::cout<<"V_meas = "<<std::endl;
   for(int i=0; i<V_meas_tmp.num_row(); ++i) {
     r_meas[i] = r_meas_tmp[i]; 
     for(int j=0; j<V_meas_tmp.num_col(); ++j) {
       V_meas[i][j] = V_meas_tmp[i][j]; 
+      std::cout<<"|"<<V_meas[i][j];
     }
+    std::cout<<"|"<<std::endl;
   }
 
   // Math taken from https://github.com/cms-sw/cmssw/blob/CMSSW_6_2_X_SLHC/TrackingTools/KalmanUpdators/src/KFUpdator.cc
   r -= r_meas;
   AlgebraicSymMatrix44 R = V + V_meas;  // sum of covariance matrices, still symmetric and invertible 
+ 
   //AlgebraicMatrix44 R = V + V_meas;  // sum of covariance matrices, still symmetric and invertible 
   bool ok = invertPosDefMatrix(R); 
+  std::cout<<"Am I here?"<<std::endl;
   if(!ok) {
     LogWarning("Reco|TrackingTools|ME0TrackTransformer") << "Inversion of total covariance matrix (predicted state + ME0 segment)! Skipping track. "; 
     return vector<Trajectory>(); 
@@ -520,6 +532,7 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
 
   // Filtered state in "local" coordinates 
   AlgebraicVector5 fsv = x + K * r; 
+  std::cout<<"Am I here?"<<std::endl;
   // Filtered state covariance matrix in "local" coordinates 
   //AlgebraicSymMatrix55 fse = ROOT::Math::Similarity(M, C) + ROOT::Math::Similarity(K, V); 
   AlgebraicMatrix55 fse = ROOT::Math::Similarity(M, C) + ROOT::Math::Similarity(K, V); 
@@ -540,7 +553,7 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
   double q = charge_upd*zSign;
   double sqr = sqrt(dxdz*dxdz + dydz*dydz + 1);
   double den = -q/(sqr*sqr*sqr*qbp);
-
+  std::cout<<"Am I here?"<<std::endl;
   // 0: x,    1: y,      2: z,      3: px,   4: py,   5: pz
   // 0: q/p,  1: dx/dz,  2: dy/dz,  3: x,    4: y
   AlgebraicMatrix65 jacobLocToGlb; 
@@ -592,7 +605,7 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
       covRecoUpdated[i][j] = covRecoUpdatedTmp[i][j]; 
     }
   }  
-
+  std::cout<<"Am I here?"<<std::endl;
   GlobalTrajectoryParameters updPars(posUpdatedAtMu, momUpdatedAtMu, charge_upd, magneticField());
   CartesianTrajectoryError updCov(covRecoUpdated);
   FreeTrajectoryState ftsUpdatedAtMu(updPars, updCov); 
@@ -605,7 +618,7 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
   Trajectory trajectoryBW = trajectoryTrkOnly; 
   trajectoryBW.pop(); 
   trajectoryBW.push(newTM); 
-
+  std::cout<<"Am I here?"<<std::endl;
   // ------------------------------------------------------------------------------
   //  End of embarassing "refit" with ME0 segment -- you can now relax and breathe
   // ------------------------------------------------------------------------------
@@ -632,7 +645,7 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
   //Trajectory trajectoryBW = trajectories.front();
     
   vector<Trajectory> trajectoriesSM = theSmoother->trajectories(trajectoryBW);
-
+  std::cout<<"Am I here?"<<std::endl;
   if(trajectoriesSM.empty()){
     LogTrace(metname)<<"No Track smoothed!"<<endl;
     return vector<Trajectory>();

@@ -1,4 +1,4 @@
-#include "TrackingTools/TrackRefitter/plugins/ME0TracksToTrajectories.h"
+include "TrackingTools/TrackRefitter/plugins/ME0TracksToTrajectories.h"
 
 #include "TrackingTools/TrackRefitter/interface/TrackTransformer.h"
 //#include "TrackingTools/TrackRefitter/interface/TrackTransformerForGlobalCosmicMuons.h"
@@ -92,18 +92,18 @@ void ME0TracksToTrajectories::produce(Event& event, const EventSetup& setup){
   Handle<reco::GenParticleCollection> genmuons;
   event.getByLabel("genParticles", genmuons);
   
-  // unsigned int gensize = genmuons->size();
+//   unsigned int gensize = genmuons->size();
 
-  // for(unsigned int i=0; i<gensize; ++i) {
-  //   const reco::GenParticle& gp = (*genmuons)[i];
-  //   if( gp.status()==1 && abs(gp.pdgId())==13 ) {
-  //     std::cout << " ###### GenMuon " << i << ": " 
-  // 		<< gp.eta() << " / " 
-  // 		<< gp.phi() << " / " 
-  // 		<< gp.charge() << " / " 
-  // 		<< gp.pt() << std::endl; 
-  //   }
-  // }
+//   for(unsigned int i=0; i<gensize; ++i) {
+//     const reco::GenParticle& gp = (*genmuons)[i];
+//     if( gp.status()==1 && abs(gp.pdgId())==13 ) {
+//       std::cout << " ###### GenMuon " << i << ": " 
+// 		<< gp.eta() << " / " 
+// 		<< gp.phi() << " / " 
+// 		<< gp.charge() << " / " 
+// 		<< gp.pt() << std::endl; 
+//     }
+//   }
 
   ////////////////////////////////
   //            END             //
@@ -120,17 +120,16 @@ void ME0TracksToTrajectories::produce(Event& event, const EventSetup& setup){
   reco::TrackRef::key_type trackIndex = 0;
 
   // Loop over the Rec tracks
-  //std::cout<<"Length = "<<muons->size()<<std::endl;
   for (ME0MuonCollection::const_iterator newMuon = muons->begin(); 
        newMuon != muons->end(); ++newMuon) {
     
     ++theNTracks;
 
-    // std::cout << " ###### ME0Muon " << theNTracks << ": " 
-    // 	      << newMuon->eta() << " / " 
-    // 	      << newMuon->phi() << " / " 
-    // 	      << newMuon->charge() << " / " 
-    // 	      << newMuon->pt() << std::endl; 
+//     std::cout << " ###### ME0Muon " << theNTracks << ": " 
+// 	      << newMuon->eta() << " / " 
+// 	      << newMuon->phi() << " / " 
+// 	      << newMuon->charge() << " / " 
+// 	      << newMuon->pt() << std::endl; 
 
     //vector<Trajectory> trajectoriesSM = theTrackTransformer->transform(*newMuon);
     vector<Trajectory> trajectoriesSM = theTrackTransformer->transform(*newMuon, genmuons);
@@ -144,11 +143,11 @@ void ME0TracksToTrajectories::produce(Event& event, const EventSetup& setup){
       //trajTrackMap->insert(Ref<vector<Trajectory> >(trajectoryCollectionRefProd,trajectoryIndex++),
       //		   reco::TrackRef(tracks,trackIndex++));
 
-      // std::cout << " ###### RefMuon " << theNTracks << ": " 
-      // 		<< trajectoriesSM.front().firstMeasurement().updatedState().globalMomentum().eta() << " / " 
-      // 		<< trajectoriesSM.front().firstMeasurement().updatedState().globalMomentum().phi() << " / " 
-      // 		<< trajectoriesSM.front().firstMeasurement().updatedState().charge() << " / " 
-      // 		<< trajectoriesSM.front().firstMeasurement().updatedState().globalMomentum().perp() << std::endl; 
+//       std::cout << " ###### RefMuon " << theNTracks << ": " 
+// 		<< trajectoriesSM.front().firstMeasurement().updatedState().globalMomentum().eta() << " / " 
+// 		<< trajectoriesSM.front().firstMeasurement().updatedState().globalMomentum().phi() << " / " 
+// 		<< trajectoriesSM.front().firstMeasurement().updatedState().charge() << " / " 
+// 		<< trajectoriesSM.front().firstMeasurement().updatedState().globalMomentum().perp() << std::endl; 
     }
     else{
       LogTrace(metname) << "Error in the Track refitting. This should not happen";

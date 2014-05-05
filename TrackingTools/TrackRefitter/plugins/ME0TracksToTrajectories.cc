@@ -114,7 +114,7 @@ void ME0TracksToTrajectories::produce(Event& event, const EventSetup& setup){
   // Handle<reco::TrackCollection> tracks;
   // event.getByLabel(theTracksLabel,tracks);
   //Handle<ME0MuonCollection> muons;
-  Handle<ME0MuonCollection> muons;
+  Handle<RealME0MuonCollection> muons;
   event.getByLabel(theME0TracksLabel,muons);
   
   Ref<vector<Trajectory> >::key_type trajectoryIndex = 0;
@@ -122,7 +122,7 @@ void ME0TracksToTrajectories::produce(Event& event, const EventSetup& setup){
 
   // Loop over the Rec tracks
   //std::cout<<"Length = "<<muons->size()<<std::endl;
-  for (ME0MuonCollection::const_iterator newMuon = muons->begin(); 
+  for (RealME0MuonCollection::const_iterator newMuon = muons->begin(); 
        newMuon != muons->end(); ++newMuon) {
     
     ++theNTracks;

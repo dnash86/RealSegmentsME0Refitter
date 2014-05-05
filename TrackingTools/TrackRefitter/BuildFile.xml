@@ -8,6 +8,9 @@
 <use   name="DataFormats/TrackerCommon"/>
 <use   name="Geometry/Records"/>
 <use   name="Geometry/TrackerNumberingBuilder"/>
+<use   name="DataFormats/DTRecHit"/>
+<use   name="DataFormats/CSCRecHit"/>
+<use   name="DataFormats/GEMRecHit"/>
 
 <use   name="CLHEP"/>
 <use   name="root"/>

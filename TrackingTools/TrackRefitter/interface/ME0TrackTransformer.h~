@@ -72,8 +72,7 @@ public:
 // 				    const EmulatedME0SegmentRef) const;
   std::vector<Trajectory> transform(const reco::TransientTrack&,
                                     const TransientTrackingRecHit::ConstRecHitContainer&, 
-				    //const EmulatedME0SegmentRef,
-				    const ME0Segment,
+				    const EmulatedME0SegmentRef,
 				    const edm::Handle<reco::GenParticleCollection>&) const;
 
   /// the magnetic field
