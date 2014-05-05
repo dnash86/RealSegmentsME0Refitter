@@ -13,7 +13,10 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023MuonReco_cff')
+
+#process.load('Configuration.Geometry.GeometryExtended2023MuonReco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023Muon4EtaReco_cff')
+
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 #process.load('Configuration.StandardSequences.RawToDigi_cff')
 #process.load('Configuration.StandardSequences.L1Reco_cff')
@@ -30,7 +33,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('file:/tmp/dnash/3Sigma.root')
+                            fileNames = cms.untracked.vstring('root://eoscms//eos/cms/store/group/upgrade/muon/ME0GlobalReco/RealME0Muons_3Sigma_SingleMuPt10Extended.root')
 #     fileNames = cms.untracked.vstring(#'file:/tmp/dnash/step3.root',
 #                                       #'file:/tmp/dnash/step3_Post130.root',
 #                                       #'file:/tmp/dnash/step3_Post262.root',
