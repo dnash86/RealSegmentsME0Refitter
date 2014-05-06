@@ -297,6 +297,10 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
     
   // Apply rule -B-
   TrajectoryStateOnSurface firstTSOS = track.innermostMeasurementState();
+
+  std::cout<<"firstTSOS"<<std::endl;
+  std::cout<<firstTSOS<<std::endl;
+
   unsigned int innerId = track.track().innerDetId();
   if(theRefitDirection.propagationDirection() != anyDirection){
     if(propagationDirection == oppositeToMomentum){
@@ -605,14 +609,27 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
       covRecoUpdated[i][j] = covRecoUpdatedTmp[i][j]; 
     }
   }  
-  //std::cout<<"Am I here?"<<std::endl;
+
   GlobalTrajectoryParameters updPars(posUpdatedAtMu, momUpdatedAtMu, charge_upd, magneticField());
   CartesianTrajectoryError updCov(covRecoUpdated);
   FreeTrajectoryState ftsUpdatedAtMu(updPars, updCov); 
+  std::cout<<"ftsUpdatedAtMu"<<std::endl;
+  std::cout<<ftsUpdatedAtMu<<std::endl;
   SteppingHelixStateInfo murecorecostateUpdated(ftsUpdatedAtMu); 
   //SteppingHelixStateInfo lastrecostateuUpdated = theMuonPropagator->propagate(murecorecostateUpdated, trajectoryTrkOnly.lastMeasurement().recHit()->surface()); 
+  //std::cout<<"Propagating to "<<*(trajectoryTrkOnly.lastMeasurement().recHit()->surface())<<std:endl;
   SteppingHelixStateInfo lastrecostateuUpdated = theShPropagator->propagate(murecorecostateUpdated, *(trajectoryTrkOnly.lastMeasurement().recHit()->surface())); 
+
+
+  FreeTrajectoryState testlaststate; 
+  lastrecostateuUpdated.getFreeState(testlaststate); 
+  std::cout<<"testlaststate"<<std::endl;
+  std::cout<<testlaststate<<std::endl;
+
+
   TrajectoryStateOnSurface tsosTrkPlusMuUpdated = lastrecostateuUpdated.getStateOnSurface(*(trajectoryTrkOnly.lastMeasurement().recHit()->surface())); 
+  std::cout<<"tsosTrkPlusMuUpdated"<<std::endl;
+  std::cout<<tsosTrkPlusMuUpdated<<std::endl;
   TrajectoryMeasurement newTM(tsosTrkPlusMuUpdated, tsosTrkPlusMuUpdated, trajectoryTrkOnly.lastMeasurement().recHit(), trajectoryTrkOnly.lastMeasurement().estimate()); 
 
   Trajectory trajectoryBW = trajectoryTrkOnly; 
@@ -636,13 +653,14 @@ vector<Trajectory> ME0TrackTransformer::transform(const reco::TransientTrack& tr
 	    << " UPD/" 
 	    << charge_upd               << "/" << momUpdatedAtMu.eta() << "/" << momUpdatedAtMu.phi() << "/" << momUpdatedAtMu.mag() 
 	    << std::endl; 
-
+  std::cout<<"Finished comparison"<<std::endl;
   ////////////////////////////////
   //            END             //
   ////////////////////////////////
 
 
   //Trajectory trajectoryBW = trajectories.front();
+  //std::cout<<trajectoryBW.measurements()<<std::endl;
     
   vector<Trajectory> trajectoriesSM = theSmoother->trajectories(trajectoryBW);
   std::cout<<"Am I here?"<<std::endl;
